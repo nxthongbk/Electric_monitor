@@ -1,0 +1,24 @@
+
+sandboxed: false
+
+executables:
+{
+    electricMonitoring = ( component )
+}
+
+processes:
+{
+    run:
+    {
+        (electricMonitoring)
+    }
+
+    faultAction: restart
+}
+
+bindings:
+{
+    electricMonitoring.component.mqtt    -> mqttClient.mqtt
+    electricMonitoring.component.le_info -> modemService.le_info
+    electricMonitoring.component.le_mdc  -> modemService.le_mdc
+}    
