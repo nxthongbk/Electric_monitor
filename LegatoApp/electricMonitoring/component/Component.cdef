@@ -1,0 +1,16 @@
+sources:
+{
+    electricMonitoring.c
+    dataConnection.c
+    runCommand.c
+}
+
+requires:
+{
+    api:
+    {
+        ${LEGATO_ROOT}/apps/platformServices/mqttClient/mqtt.api
+        modemServices/le_info.api
+        modemServices/le_mdc.api
+    }
+}
