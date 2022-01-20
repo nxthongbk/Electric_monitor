@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Electric Monitor</title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="../static/images/electric_logo.png">
+    <!-- Custom CSS -->
+    <link href="../static/libs/chartist/dist/chartist.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="../static/css/style.min.css" rel="stylesheet">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        .card {
+            border-radius: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="preloader">
+        <div class="lds-ripple">
+            <div class="lds-pos"></div>
+            <div class="lds-pos"></div>
+        </div>
+    </div>
+    <div id="main-wrapper" data-navbarbg="skin6" data-theme="light" data-layout="vertical" data-sidebartype="full" data-boxed-layout="full">
+        <!-- [ Header ] start -->
+        {% include '/header.html' %}
+        <!-- [ Header ] end -->
+
+        <!-- [ Sidebar menu ] start -->
+        {% include '/sidebar.html' %}
+        <!-- [ Sidebar menu ] end -->
+        <!-- Page wrapper  -->
+        <!-- ============================================================== -->
+        <div class="page-wrapper">
+            <div class="page-breadcrumb">
+                <div class="row">
+                    <div class="col-5 align-self-center">
+                        <h4 class="page-title">Profile</h4>
+                    </div>
+                    <div class="col-7 align-self-center">
+                        <div class="d-flex align-items-center justify-content-end">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item">
+                                        <a href="/dashboard">Home</a>
+                                    </li>
+                                    <li class="breadcrumb-item active" aria-current="page">Profile</li>
+                                </ol>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid">
+                <!-- Start Page Content -->
+                <!-- Row -->
+                <div class="row">
+                    <!-- Column -->
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title font-bold">User Info</h5>
+                                <div class="form-group">
+                                    <label class="col-md-12">Type</label>
+                                    <div class="col-md-12">
+                                        <input type="text" placeholder={{user['authority']}} 
+                                            class="form-control form-control-line">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="example-email" class="col-md-12">Email</label>
+                                    <div class="col-md-12">
+                                        <input type="email" placeholder={{user['email']}}
+                                            class="form-control form-control-line" name="example-email"
+                                            id="example-email">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="example-email" class="col-md-12">User</label>
+                                    <div class="col-md-12">
+                                        <input type="email" placeholder="User" value="{{user['name']}}"
+                                            class="form-control form-control-line" name="example-email"
+                                            id="example-email">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title font-bold">Change Password</h5>
+                                <form id="changePassword" action="/changePassword" method="post">
+                                    <div class="form-group">
+                                        <label for="recipient-name" class="col-form-label">Old Password:</label>
+                                        <input type="password" name="pw" class="form-control" id="pw">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="recipient-name" class="col-form-label">New Password:</label>
+                                        <input type="password" name="newpw1" class="form-control" id="newpw1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="recipient-name" class="col-form-label">Retype New Password:</label>
+                                        <input type="password" name="newpw2" class="form-control" id="newpw2">
+                                    </div>
+                                     <button type="submit" class="btn btn-rounded btn-dark">Change</button>
+                                     <label for="recipient-name" class="col-form-label">{{error}}</label>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Column -->
+                </div>
+            </div>
+        </div>
+        <!-- End Page wrapper  -->
+        
+    </div>
+    <!-- End Wrapper -->
+    <!-- All Jquery -->
+    <script src="../static/libs/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="../static/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- slimscrollbar scrollbar JavaScript -->
+    <script src="../static/libs/sparkline/sparkline.js"></script>
+    <!--Wave Effects -->
+    <script src="../static/js/waves.js"></script>
+    <!--Menu sidebar -->
+    <script src="../static/js/sidebarmenu.js"></script>
+    <!--Custom JavaScript -->
+    <script src="../static/js/custom.js"></script>
+</body>
+
+</html>

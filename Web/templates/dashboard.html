@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+
+<head>
+    <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Electric Monitor</title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="../static/images/electric_logo.png">
+    <!-- Custom CSS -->
+    <link href="../static/libs/chartist/dist/chartist.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="../static/css/style.min.css" rel="stylesheet">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <div class="preloader">
+        <div class="lds-ripple">
+            <div class="lds-pos"></div>
+            <div class="lds-pos"></div>
+        </div>
+    </div>
+
+    <div id="main-wrapper" data-navbarbg="skin6" data-theme="light" data-layout="vertical" data-sidebartype="full" data-boxed-layout="full">
+        
+        <!-- [ Header ] start -->
+        {% include '/header.html' %}
+        <!-- [ Header ] end -->
+
+        <!-- [ Sidebar menu ] start -->
+        {% include '/sidebar.html' %}
+        <!-- [ Sidebar menu ] end -->
+
+        <!-- Page wrapper  -->
+        <div class="page-wrapper">
+            <div class="page-breadcrumb">
+                <div class="row">
+                    <div class="col-5 align-self-center">
+                        <h4 class="page-title">Dashboard</h4>
+                    </div>
+                    <div class="col-7 align-self-center">
+                        <div class="d-flex align-items-center justify-content-end">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item">
+                                        <a href="/dashboard">Home</a>
+                                    </li>
+                                    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                                </ol>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Container fluid  -->
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- column -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Devices</h4>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="border-top-0">#</th>
+                                            <th class="border-top-0">NAME</th>
+                                            <th class="border-top-0">DESCRIPTION</th>
+                                            <th class="border-top-0">STATUS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for device in device_attribute['data'] %}
+                                            {%- if device['device_detail']['deviceProfileName'] == 'electric_monitor' -%}
+                                            <tr>
+                                                <td><a><i class="mdi mdi-server"></i></a></td>
+                                                <td><a href="/attribute/{{device['device_detail']['id']['id']}}">{{device['device_detail']['name']}}</td>
+                                                <td>{{device['device_detail']['additionalInfo']['description']}}</td>
+                                                {%- if device['device_attribute'][0]['value']|strfdelta <6 -%}
+                                                <td><span class="label label-success label-rounded">Online</span></td>
+                                                    {%- else -%}
+                                                <td><span class="label label-default label-rounded">Disconnected</span></td>
+                                                {%- endif %}
+                                            </tr>
+                                            {%- endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- End Wrapper -->
+    
+    <!-- All Jquery -->
+    <!-- ============================================================== -->
+    <script src="../static/libs/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="../static/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- slimscrollbar scrollbar JavaScript -->
+    <script src="../static/libs/sparkline/sparkline.js"></script>
+    <!--Wave Effects -->
+    <script src="../static/js/waves.js"></script>
+    <!--Menu sidebar -->
+    <script src="../static/js/sidebarmenu.js"></script>
+    <!--Custom JavaScript -->
+    <script src="../static/js/custom.js"></script>
+    <!--This page JavaScript -->
+    <!--chartis chart-->
+    <script src="../static/libs/chartist/dist/chartist.min.js"></script>
+    <script src="../static/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+</body>
+
+</html>

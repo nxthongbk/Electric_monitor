@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+
+<head>
+    <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Electric Monitor - Device Attribute</title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="../static/images/electric_logo.png">
+    <!-- Custom CSS -->
+    <link href="../static/libs/chartist/dist/chartist.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="../static/css/style.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.0/socket.io.js" ></script>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+      .chart-container {
+        position: relative;
+        margin: auto;
+        height: 160px;
+      }
+      .card {
+        border-radius: 12px;
+      }
+    </style>
+</head>
+
+<body>
+    <div class="preloader">
+        <div class="lds-ripple">
+            <div class="lds-pos"></div>
+            <div class="lds-pos"></div>
+        </div>
+    </div>
+
+    <div id="main-wrapper" data-navbarbg="skin6" data-theme="light" data-layout="vertical" data-sidebartype="full" data-boxed-layout="full">
+        
+        <!-- [ Header ] start -->
+        {% include '/header.html' %}
+        <!-- [ Header ] end -->
+
+        <!-- [ Sidebar menu ] start -->
+        {% include '/sidebar.html' %}
+        <!-- [ Sidebar menu ] end -->
+
+        <!-- Page wrapper  -->
+        <div class="page-wrapper">
+          <div class="page-breadcrumb">
+              <div class="row">
+                  <div class="col-5 align-self-center">
+                      <h4 class="page-title">Device Attribute</h4>
+                  </div>
+                  <div class="col-7 align-self-center">
+                      <div class="d-flex align-items-center justify-content-end">
+                          <nav aria-label="breadcrumb">
+                              <ol class="breadcrumb">
+                                  <li class="breadcrumb-item">
+                                      <a href="/dashboard">Home</a>
+                                  </li>
+                                  <li class="breadcrumb-item active" aria-current="page">Attribute</li>
+                              </ol>
+                          </nav>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <!-- End Bread crumb and right sidebar toggle -->
+          <!-- Container fluid  -->
+          <div class="container-fluid">
+              <div class="row">
+                <div class="col-lg-2">
+                  <div class="card">
+                      <div class="card-body">
+                          <h3 class="mb-1 font-bold">Voltage</h3>
+                          <h2 id="voltageValue" style="color: rgb(33, 150, 243);">{{telemetry['voltage'][0]['value']}}</h2>
+                          <h5 class="font-light" id="voltageLast">Last updated: <br/> {{telemetry['voltage'][0]['ts']|ctime}}</h5>
+                      </div>
+                  </div>
+                </div>
+                <div class="col-lg-10">
+                  <div class="card">
+                    <div class="card-body">
+                      <h4 class="font-bold">Voltage Chart</h4>
+                      <span class="card-subtitle"><i class="mdi mdi-timer"></i> Realtime - last hour</span>
+                      <div class="chart-container">
+                        <canvas id="voltage"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-2">
+                  <div class="card">
+                    <div class="card-body">
+                        <h3 class="mb-1 font-bold">Current</h3>
+                        <h2 id="currentValue" style="color: rgb(255, 99, 132);">{{telemetry['current'][0]['value']}}</h2>
+                        <h5 class="font-light" id="currentLast">Last updated: <br/> {{telemetry['current'][0]['ts']|ctime}}</h5>
+                    </div>
+                </div>
+                </div>
+                <div class="col-lg-10">
+                  <div class="card">
+                    <div class="card-body">
+                      <h4 class="font-bold">Current Chart</h4>
+                      <span class="card-subtitle"><i class="mdi mdi-timer"></i> Realtime - last 30 minutes</span>
+                      <div class="chart-container">
+                        <canvas id="current"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-2">
+                  <div class="card">
+                    <div class="card-body">
+                        <h3 class="mb-1 font-bold">Energy Uses</h3>
+                        <h2 id="energyValue" style="color: rgb(75, 192, 192);">{{telemetry['total energy'][0]['value']}}</h2>
+                        <h5 class="font-light" id="energyLast">Last updated: <br/> {{telemetry['total energy'][0]['ts']|ctime}}</h5>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-10">
+                  <div class="card">
+                    <div class="card-body">
+                      <h4 class="font-bold">Energy Uses</h4>
+                      <span class="card-subtitle"><i class="mdi mdi-timer"></i> Realtime - last minute</span>
+                      <div class="chart-container">
+                        <canvas id="energy"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </div>
+      </div>
+    </div>
+    <!-- End Wrapper -->
+    
+    <!-- All Jquery -->
+    <script src="../static/libs/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="../static/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- slimscrollbar scrollbar JavaScript -->
+    <script src="../static/libs/sparkline/sparkline.js"></script>
+    <!--Wave Effects -->
+    <script src="../static/js/waves.js"></script>
+    <!--Menu sidebar -->
+    <script src="../static/js/sidebarmenu.js"></script>
+    <!--Custom JavaScript -->
+    <script src="../static/js/custom.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      function addZero(i) {
+        if (i < 10) {i = "0" + i}
+        return i;
+      }
+
+      function tsToFullDate(string) {
+        date = new Date(string);
+        return date.getFullYear() + "-" + addZero(date.getMonth()+1) + "-" + addZero(date.getDate()) + " " + addZero(date.getHours()) + ":" + addZero(date.getMinutes()) + ":" + addZero(date.getSeconds())
+      }
+
+      function tsToTime(string) {
+        date = new Date(string);
+        return addZero(date.getHours()) + ":" + addZero(date.getMinutes())
+      }
+
+      const options = {
+        maintainAspectRatio: false,
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+        interaction: {
+          intersect: false,
+        },
+        animation: {
+            duration: 0 // general animation time
+        },
+      };
+
+      // voltage chart
+      var voltagesObject = {{ voltages|tojson }};
+      var seriesVoltage = []
+      var labelsVoltage = []
+      for (let i = 0; i < voltagesObject['voltage'].length; i++) {
+        labelsVoltage.push(tsToTime(voltagesObject['voltage'][i]['ts']))
+        seriesVoltage.push(voltagesObject['voltage'][i]['value'])
+      }
+      const dataVoltage = {
+        labels: labelsVoltage,
+        datasets: [{
+          label: 'Voltage',
+          borderColor:  'rgb(33, 150, 243)',
+          backgroundColor: 'rgb(33, 150, 243)',
+          data: seriesVoltage,
+          fill: false,
+          tension: 0.5,
+          pointRadius: 0,
+        }],
+      };
+      var chartVoltage = new Chart('voltage', {
+        type: 'line',
+        data: dataVoltage,
+        options: options
+      });
+
+      // current chart
+      var currentsObject = {{ currents|tojson }};
+      var seriesCurrent = []
+      var labelsCurrent = []
+      for (let i = 0; i < currentsObject['current'].length; i++) {
+        labelsCurrent.push(tsToTime(currentsObject['current'][i]['ts']))
+        seriesCurrent.push(currentsObject['current'][i]['value'])
+      }
+      const dataCurrent = {
+        labels: labelsCurrent,
+        datasets: [{
+          label: 'Current',
+          borderColor:  'rgb(255, 99, 132)',
+          backgroundColor: 'rgb(255, 99, 132)',
+          data: seriesCurrent,
+          fill: false,
+          tension: 0.5,
+          pointRadius: 0,
+        }],
+      };
+      var chartCurrent = new Chart('current', {
+        type: 'line',
+        data: dataCurrent,
+        options: options
+      });
+
+      // total energy chart
+      var energyObject = {{ energy|tojson }};
+      var seriesEnergy = []
+      var labelsEnergy = []
+      for (let i = 0; i < energyObject['total energy'].length; i++) {
+        labelsEnergy.push(tsToTime(energyObject['total energy'][i]['ts']))
+        seriesEnergy.push(energyObject['total energy'][i]['value'])
+      }
+      const dataEnergy = {
+        labels: labelsEnergy,
+        datasets: [{
+          label: 'Energy',
+          borderColor:  'rgb(75, 192, 192)',
+          backgroundColor: 'rgb(75, 192, 192)',
+          data: seriesEnergy,
+          fill: false,
+          tension: 0.5,
+          pointRadius: 0,
+        }],
+      };
+      var chartEnergy = new Chart('energy', {
+        type: 'line',
+        data: dataEnergy,
+        options: options
+      });
+    </script>
+
+
+    <script>
+      function updateChart(chart, label, data) {
+        chart.data.labels.shift();
+        chart.data.datasets[0].data.shift();
+        chart.data.labels.push(label);
+        chart.data.datasets[0].data.push(data);
+        chart.update();
+      }
+    </script>
+
+
+    <script type="text/javascript">
+        function SocketUpdate() {
+            var token = "{{token}}";
+            var entityId = "{{device_id}}";
+            var webSocket = new WebSocket("wss://iot.innovation.com.vn/api/ws/plugins/telemetry?token=" + token);
+
+            webSocket.onopen = function () {
+                var object = {
+                    tsSubCmds: [
+                        {
+                            entityType: "DEVICE",
+                            entityId: entityId,
+                            scope: "LATEST_TELEMETRY",
+                            cmdId: 10,
+                        }
+                    ],
+                    historyCmds: [],
+                    attrSubCmds: []
+                };
+                var data = JSON.stringify(object);
+                webSocket.send(data);
+            };
+
+            webSocket.onmessage = function (event) {
+              var received_msg = event.data;
+              var obj = JSON.parse(event.data);
+              
+              if(obj.data.hasOwnProperty("voltage")) {
+                document.getElementById("voltageValue").innerHTML = obj.data['voltage'][0][1];
+                document.getElementById("voltageLast").innerHTML = "Last updated: <br/>" + tsToFullDate(obj.data['voltage'][0][0]);
+                updateChart(chartVoltage, tsToTime(obj.data['voltage'][0][0]), obj.data['voltage'][0][1]);
+              }
+
+              if(obj.data.hasOwnProperty("current")) {
+                document.getElementById("currentValue").innerHTML = obj.data['current'][0][1];
+                document.getElementById("currentLast").innerHTML = "Last updated: <br/>" + tsToFullDate(obj.data['current'][0][0]);
+                updateChart(chartCurrent, tsToTime(obj.data['current'][0][0]), obj.data['current'][0][1]);
+              }
+
+              if(obj.data.hasOwnProperty("total energy")) {
+                document.getElementById("energyValue").innerHTML = obj.data['total energy'][0][1];
+                document.getElementById("energyLast").innerHTML = "Last updated: <br/>" + tsToFullDate(obj.data['total energy'][0][0]);
+                updateChart(chartEnergy, tsToTime(obj.data['total energy'][0][0]), obj.data['total energy'][0][1]);
+              }
+            };
+
+            webSocket.onclose = function (event) {
+                alert("Connection is closed!");
+            };
+        }
+        SocketUpdate();
+    </script>
+
+</body>
+
+</html>
