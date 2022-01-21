@@ -37,8 +37,9 @@ static int sockFd;
 struct sockaddr_in server_addr; //connector's address information
 
 // modbus TCP message
-//static char modbusMsg[20] = {0x00, 0x01, 0x00, 0x00, 0x00, 0x0E, 0x01, 0x04, 0x00, 0x14, 0x00, 0x02, 0x00, 0x16, 0x00, 0x02, 0x00, 0x00, 0x00, 0x02};
-static char modbusMsg[20] = {0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x04, 0x00, 0x14, 0x00, 0x04};
+// static char modbusMsg[20] = {0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x04, 0x00, 0x14, 0x00, 0x04}; // voltage and current
+// static char modbusMsgP[20] = {0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x04, 0x00, 0x00, 0x00, 0x02}; // total power
+static char modbusMsg[20] = {0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x04, 0x00, 0x00, 0x00, 0x18};
 
 //reference to request data timer
 le_timer_Ref_t dataRequestTimerRef = NULL;
@@ -165,7 +166,7 @@ float HexToFloat(char *dataString)
     uint32_t data;
     sscanf(dataString, "%x", &data);
     f = *((float*)&data);
-    LE_INFO("The hexadecimal 0x%08X becomes %.3f as a float\n", data, f);
+    LE_INFO("Raw data: 0x%08X. Readable data: %.3f", data, f);
 
     return f;
 }
@@ -179,9 +180,32 @@ float HexToFloat(char *dataString)
 void GetData(le_timer_Ref_t  timerRef)
 {
     int numbytes;
-    unsigned char buf[21];
+    unsigned char buf[60];
     
     LE_INFO("Getting data");
+    
+    int error = 0;
+    socklen_t len = sizeof (error);
+    int retval = getsockopt (sockFd, SOL_SOCKET, SO_ERROR, &error, &len);
+    if (retval != 0) 
+    {
+        LE_ERROR("Socket error.");
+        while(1){
+            sleep(10);
+            LE_INFO("Reconnecting");
+            if (connect(sockFd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
+                LE_ERROR("Connection with the device failed...\n");
+                close(sockFd);
+            }
+            else{
+                LE_INFO("Re-connected to electric device..\n");
+            }
+        }
+        
+    }
+    
+    // get voltage and current
+    //memcpy(buf, modbusTCP(modbusMsg), sizeof(buf));
     if (send(sockFd, modbusMsg, sizeof(modbusMsg), 0) == -1){
         LE_ERROR("Unable to send data request");
     }
@@ -193,30 +217,31 @@ void GetData(le_timer_Ref_t  timerRef)
     for(int i=0; i < sizeof(buf)/sizeof(buf[0]); i++){
         LE_INFO("%02X", buf[i]);
     }
-    
-    
+ 
     // convert raw hex data to float
     // voltage
     char voltage[10];
     float volt;
-    snprintf(voltage, sizeof(voltage), "%02X%02X%02X%02X", buf[11], buf[12], buf[9], buf[10]);
+    //snprintf(voltage, sizeof(voltage), "%02X%02X%02X%02X", buf[11], buf[12], buf[9], buf[10]);
+    snprintf(voltage, sizeof(voltage), "%02X%02X%02X%02X", buf[51], buf[52], buf[49], buf[50]);
     volt = HexToFloat(voltage);
     
     char current[10];
     float curr;
     // current
-    snprintf(current, sizeof(current), "%02X%02X%02X%02X", buf[15], buf[16], buf[13], buf[14]);
+    //snprintf(current, sizeof(current), "%02X%02X%02X%02X", buf[15], buf[16], buf[13], buf[14]);
+    snprintf(current, sizeof(current), "%02X%02X%02X%02X", buf[55], buf[56], buf[53], buf[54]);;
     curr = HexToFloat(current);
+
     
     // total active energy
-    // char totalEnergy[10];
-    // float energy;
-    // snprintf(totalEnergy, sizeof(totalEnergy), "%02X%02X%02X%02X", buf[19], buf[20], buf[17], buf[18]);
-    // energy = HexToFloat(totalEnergy);
+    char totalEnergy[10];
+    float energy;
+    snprintf(totalEnergy, sizeof(totalEnergy), "%02X%02X%02X%02X", buf[11], buf[12], buf[9], buf[10]);
+    energy = HexToFloat(totalEnergy);
     
     char publishData[128];
-    //snprintf(publishData, sizeof(publishData), "{\"voltage\":\"%f\", {\"current\":\"%f\", {\"total energy\":\"%f\"}", volt, curr, energy);
-    snprintf(publishData, sizeof(publishData), "{\"voltage\":\"%f\", \"current\":\"%f\"}", volt, curr);
+    snprintf(publishData, sizeof(publishData), "{\"voltage\":\"%.3f\", \"current\":\"%.3f\", \"total energy\":\"%.3f\"}", volt, curr, energy);
     Publish(publishData);
 
 }
@@ -280,6 +305,11 @@ COMPONENT_INIT
         subscribeTopic);
     LE_INFO("Subscribed to topic (%s)", subscribeTopic);
     
+    // socket
+    struct timeval timeout;      
+    timeout.tv_sec = 10;
+    timeout.tv_usec = 0;
+
     LE_INFO("Start monitoring electric consumption");
     if ((sockFd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         LE_ERROR("creating socket failed\n");
@@ -292,6 +322,19 @@ COMPONENT_INIT
     server_addr.sin_addr.s_addr = inet_addr(TCP_SERVER_ADDRESS);
     server_addr.sin_port = htons(TCP_SERVER_PORT);
     
+    // add send & receive timeout
+    if (setsockopt (sockFd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+                sizeof timeout) < 0)
+    {
+        LE_ERROR("Setsockopt failed");
+    }
+
+    if (setsockopt (sockFd, SOL_SOCKET, SO_SNDTIMEO, &timeout,
+                sizeof timeout) < 0)
+    {
+        LE_ERROR("Setsockopt failed");
+    }
+
     // connect the client socket to server socket
     if (connect(sockFd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
         LE_ERROR("Connection with the device failed...\n");
