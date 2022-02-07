@@ -56,7 +56,7 @@ char DeviceIMEI[LE_INFO_IMEI_MAX_BYTES];
  * Thingsboard information
  */
 //--------------------------------------------------------------------------------------------------
-//const char mqttBrokerURI[] = "tcp://104.196.24.70:1883";
+//const char mqttBrokerURI[] = "tcp://104.196.24.70:1883";  // demo.thingsboard.io
 const char mqttBrokerURI[] = "tcp://iot.innovation.com.vn:3009";
 const uint8_t mqttPassword[] = {'S', 'W', 'I'};
 const char topicSubServerRPC[] = "v1/devices/me/rpc/request/+";
@@ -125,8 +125,7 @@ void Publish
     snprintf((char*)payload, sizeof(payload), "%s", data);
     size_t payloadLen = strlen((char*)payload);
     const bool retain = false;
-    // char publishTopic[64];
-    // snprintf(publishTopic, sizeof(publishTopic), "%s", replyTopic);
+
     const le_result_t publishResult = mqtt_Publish(
         MQTTSession,
         topicTelemetry,
@@ -205,7 +204,6 @@ void GetData(le_timer_Ref_t  timerRef)
     }
     
     // get voltage and current
-    //memcpy(buf, modbusTCP(modbusMsg), sizeof(buf));
     if (send(sockFd, modbusMsg, sizeof(modbusMsg), 0) == -1){
         LE_ERROR("Unable to send data request");
     }
@@ -222,18 +220,15 @@ void GetData(le_timer_Ref_t  timerRef)
     // voltage
     char voltage[10];
     float volt;
-    //snprintf(voltage, sizeof(voltage), "%02X%02X%02X%02X", buf[11], buf[12], buf[9], buf[10]);
     snprintf(voltage, sizeof(voltage), "%02X%02X%02X%02X", buf[51], buf[52], buf[49], buf[50]);
     volt = HexToFloat(voltage);
     
+    // current
     char current[10];
     float curr;
-    // current
-    //snprintf(current, sizeof(current), "%02X%02X%02X%02X", buf[15], buf[16], buf[13], buf[14]);
     snprintf(current, sizeof(current), "%02X%02X%02X%02X", buf[55], buf[56], buf[53], buf[54]);;
     curr = HexToFloat(current);
 
-    
     // total active energy
     char totalEnergy[10];
     float energy;
@@ -339,7 +334,6 @@ COMPONENT_INIT
     if (connect(sockFd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
         LE_ERROR("Connection with the device failed...\n");
         close(sockFd);
-        return;
     }
     else
         LE_INFO("Connected to electric device..\n");
